@@ -88,14 +88,23 @@ class AgentController extends Controller
 
     public function destroy(Agent $agent)
     {
+        // Supprimer la photo de l'agent
         if ($agent->photo) {
             Storage::disk('public')->delete($agent->photo);
         }
 
+        // Supprimer toutes les photos de toutes les annonces de l'agent
+        foreach ($agent->annonces as $annonce) {
+            if ($annonce->photos) {
+                foreach ($annonce->photos as $photo) {
+                    Storage::disk('public')->delete($photo);
+                }
+            }
+        }
+
+        // Supprimer l'agent (les annonces et avis seront supprimés en cascade)
         $agent->delete();
 
-        return redirect()
-            ->route('admin.agents.index')
-            ->with('success', 'Agent supprimé !');
+        return redirect()->route('admin.agents.index')->with('success', 'Agent supprimé avec succès !');
     }
 }
