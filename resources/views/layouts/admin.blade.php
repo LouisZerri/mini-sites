@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') - Admin Gestimmo</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-100">
     <nav class="bg-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -19,13 +21,19 @@
                     <a href="{{ route('admin.agents.index') }}" class="text-gray-700 hover:text-blue-600">
                         Agents
                     </a>
+                    <span class="text-gray-500">{{ Auth::user()->name }}</span>
+                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="text-red-600 hover:text-red-800">
+                            Déconnexion
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </nav>
-
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        @if(session('success'))
+        @if (session('success'))
             <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
                 {{ session('success') }}
             </div>
@@ -34,4 +42,5 @@
         @yield('content')
     </main>
 </body>
+
 </html>
