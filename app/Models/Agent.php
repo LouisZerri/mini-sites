@@ -1,0 +1,87 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+
+class Agent extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'prenom',
+        'nom',
+        'slug',
+        'email',
+        'telephone',
+        'photo',
+        'bio',
+        'secteur',
+        'reseaux_sociaux',
+        'actif',
+        'couleur_primaire',
+        'couleur_secondaire',
+    ];
+
+    protected $casts = [
+        'reseaux_sociaux' => 'array',
+        'actif' => 'boolean',
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($agent) {
+            if (empty($agent->slug)) {
+                $agent->slug = static::generateUniqueSlug($agent->prenom, $agent->nom);
+            }
+        });
+    }
+
+    public static function generateUniqueSlug(string $prenom, string $nom): string
+    {
+        $slug = Str::slug($prenom . '-' . $nom);
+        $originalSlug = $slug;
+        $count = 1;
+
+        while (static::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+
+        return $slug;
+    }
+
+    public function annonces()
+    {
+        return $this->hasMany(Annonce::class);
+    }
+
+    public function avis()
+    {
+        return $this->hasMany(Avis::class);
+    }
+
+    public function avisValides()
+    {
+        return $this->hasMany(Avis::class)->where('valide', true);
+    }
+
+    public function getUrlAttribute(): string
+    {
+        return 'http://' . $this->slug . '.gestimmo-conseillers.local';
+    }
+
+    public function getNomCompletAttribute(): string
+    {
+        return $this->prenom . ' ' . $this->nom;
+    }
+
+    public function getMoyenneAvisAttribute(): float
+    {
+        return $this->avisValides()->avg('note') ?? 0;
+    }
+}
