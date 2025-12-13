@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('agents', function (Blueprint $table) {
             $table->id();
+            $table->unsignedInteger('user_id')->nullable();
             $table->string('prenom');
             $table->string('nom');
             $table->string('titre')->nullable(); // Ex: "Expert en Investissement"
