@@ -83,7 +83,7 @@ class Agent extends Model
 
     public function getUrlAttribute(): string
     {
-        return 'http://' . $this->slug . '.gestimmo-conseillers.local';
+        return 'https://' . $this->slug . '.gestimmo-conseillers.fr';
     }
 
     public function getNomCompletAttribute(): string
