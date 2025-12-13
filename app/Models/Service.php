@@ -2,27 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Annonce extends Model
+class Service extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'agent_id',
         'titre',
+        'image',
         'description',
-        'prix',
-        'type',
-        'photos',
-        'visible',
+        'points_forts',
+        'ordre',
+        'actif',
     ];
 
     protected $casts = [
-        'photos' => 'array',
-        'visible' => 'boolean',
-        'prix' => 'decimal:2',
+        'points_forts' => 'array',
+        'actif' => 'boolean',
     ];
 
     public function agent()

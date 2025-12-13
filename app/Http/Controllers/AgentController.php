@@ -24,30 +24,41 @@ class AgentController extends Controller
         $validated = $request->validate([
             'prenom' => 'required|string|max:255',
             'nom' => 'required|string|max:255',
-            'email' => 'required|email|unique:agents,email',
+            'titre' => 'nullable|string|max:255',
+            'email' => 'required|email|unique:agents',
             'telephone' => 'required|string|max:20',
+            'secteur' => 'required|string|max:255',
+            'langues' => 'nullable|string|max:50',
             'photo' => 'nullable|image|max:5120',
             'bio' => 'nullable|string',
-            'secteur' => 'required|string|max:255',
-            'reseaux_sociaux' => 'nullable|array',
-            'couleur_primaire' => 'nullable|string|max:7',
-            'couleur_secondaire' => 'nullable|string|max:7',
+            'accroche' => 'nullable|string|max:500',
+            'info_legale' => 'nullable|string|max:500',
+            'parcours' => 'nullable|string',
+            'actif' => 'boolean',
+            'disponible' => 'boolean',
+            'reseaux_sociaux.linkedin' => 'nullable|url',
+            'reseaux_sociaux.facebook' => 'nullable|url',
+            'reseaux_sociaux.instagram' => 'nullable|url',
         ]);
 
+        // Upload de la photo
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('agents', 'public');
         }
 
+        // Gestion des réseaux sociaux
+        $validated['reseaux_sociaux'] = array_filter($request->input('reseaux_sociaux', []), function ($value) {
+            return !empty($value);
+        });
+
         $agent = Agent::create($validated);
 
-        return redirect()
-            ->route('admin.agents.index')
-            ->with('success', "Agent {$agent->nom_complet} créé ! Mini-site : {$agent->url}");
+        return redirect()->route('admin.agents.index')->with('success', 'Agent créé avec succès !');
     }
 
     public function show(Agent $agent)
     {
-        $agent->load(['annonces', 'avisValides']);
+        $agent->load(['services', 'avisValides']);
         return view('admin.agents.show', compact('agent'));
     }
 
@@ -61,29 +72,40 @@ class AgentController extends Controller
         $validated = $request->validate([
             'prenom' => 'required|string|max:255',
             'nom' => 'required|string|max:255',
+            'titre' => 'nullable|string|max:255',
             'email' => 'required|email|unique:agents,email,' . $agent->id,
             'telephone' => 'required|string|max:20',
+            'secteur' => 'required|string|max:255',
+            'langues' => 'nullable|string|max:50',
             'photo' => 'nullable|image|max:5120',
             'bio' => 'nullable|string',
-            'secteur' => 'required|string|max:255',
-            'reseaux_sociaux' => 'nullable|array',
+            'accroche' => 'nullable|string|max:500',
+            'info_legale' => 'nullable|string|max:500',
+            'parcours' => 'nullable|string',
             'actif' => 'boolean',
-            'couleur_primaire' => 'nullable|string|max:7',
-            'couleur_secondaire' => 'nullable|string|max:7',
+            'disponible' => 'boolean',
+            'reseaux_sociaux.linkedin' => 'nullable|url',
+            'reseaux_sociaux.facebook' => 'nullable|url',
+            'reseaux_sociaux.instagram' => 'nullable|url',
         ]);
 
+        // Upload de la nouvelle photo
         if ($request->hasFile('photo')) {
+            // Supprimer l'ancienne photo
             if ($agent->photo) {
                 Storage::disk('public')->delete($agent->photo);
             }
             $validated['photo'] = $request->file('photo')->store('agents', 'public');
         }
 
+        // Gestion des réseaux sociaux
+        $validated['reseaux_sociaux'] = array_filter($request->input('reseaux_sociaux', []), function ($value) {
+            return !empty($value);
+        });
+
         $agent->update($validated);
 
-        return redirect()
-            ->route('admin.agents.index')
-            ->with('success', 'Agent mis à jour !');
+        return redirect()->route('admin.agents.index')->with('success', 'Agent mis à jour !');
     }
 
     public function destroy(Agent $agent)
@@ -93,16 +115,14 @@ class AgentController extends Controller
             Storage::disk('public')->delete($agent->photo);
         }
 
-        // Supprimer toutes les photos de toutes les annonces de l'agent
-        foreach ($agent->annonces as $annonce) {
-            if ($annonce->photos) {
-                foreach ($annonce->photos as $photo) {
-                    Storage::disk('public')->delete($photo);
-                }
+        // Supprimer toutes les photos de tous les services de l'agent
+        foreach ($agent->services as $service) {
+            if ($service->image) {
+                Storage::disk('public')->delete($service->image);
             }
         }
 
-        // Supprimer l'agent (les annonces et avis seront supprimés en cascade)
+        // Supprimer l'agent (les services et avis seront supprimés en cascade)
         $agent->delete();
 
         return redirect()->route('admin.agents.index')->with('success', 'Agent supprimé avec succès !');

@@ -71,7 +71,7 @@ class AvisController extends Controller
     }
 
     // Action rapide pour valider/invalider
-    public function toggleValidation(Avis $avis)
+    public function toggleValidation(Agent $agent, Avis $avis)
     {
         $avis->update(['valide' => !$avis->valide]);
 

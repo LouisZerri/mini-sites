@@ -18,16 +18,21 @@ class Agent extends Model
         'telephone',
         'photo',
         'bio',
+        'accroche',
         'secteur',
         'reseaux_sociaux',
         'actif',
-        'couleur_primaire',
-        'couleur_secondaire',
+        'titre',
+        'langues',
+        'disponible',
+        'info_legale',
+        'parcours',
     ];
 
     protected $casts = [
         'reseaux_sociaux' => 'array',
         'actif' => 'boolean',
+        'disponible' => 'boolean',
     ];
 
     protected static function boot()
@@ -55,14 +60,19 @@ class Agent extends Model
         return $slug;
     }
 
-    public function annonces()
-    {
-        return $this->hasMany(Annonce::class);
-    }
-
     public function avis()
     {
         return $this->hasMany(Avis::class);
+    }
+
+    public function services()
+    {
+        return $this->hasMany(Service::class)->orderBy('ordre');
+    }
+
+    public function servicesActifs()
+    {
+        return $this->hasMany(Service::class)->where('actif', true)->orderBy('ordre');
     }
 
     public function avisValides()

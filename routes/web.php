@@ -2,22 +2,21 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AgentController;
-use App\Http\Controllers\AnnonceController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\AvisController;
 use App\Http\Controllers\MiniSiteController;
 use Illuminate\Support\Facades\Auth;
 
-// Redirection de la racine vers le login
+// Redirection racine
 Route::get('/', function () {
     return Auth::check() ? redirect()->route('admin.agents.index') : redirect()->route('login');
 });
 
-// Routes d'authentification (générées par Breeze)
+// Routes d'authentification
 require __DIR__.'/auth.php';
 
-// Routes admin protégées par authentification
+// Routes admin protégées
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    // Dashboard
     Route::get('/', function () {
         return redirect()->route('admin.agents.index');
     })->name('dashboard');
@@ -25,10 +24,17 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Agents
     Route::resource('agents', AgentController::class);
     
-    // Annonces et Avis d'un agent
+    // Services et Avis d'un agent
     Route::prefix('agents/{agent}')->group(function () {
-        Route::resource('annonces', AnnonceController::class);
+        // Services
+        Route::get('services', [ServiceController::class, 'index'])->name('services.index');
+        Route::get('services/create', [ServiceController::class, 'create'])->name('services.create');
+        Route::post('services', [ServiceController::class, 'store'])->name('services.store');
+        Route::get('services/{service}/edit', [ServiceController::class, 'edit'])->name('services.edit');
+        Route::put('services/{service}', [ServiceController::class, 'update'])->name('services.update');
+        Route::delete('services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
         
+        // Avis
         Route::get('avis', [AvisController::class, 'index'])->name('avis.index');
         Route::get('avis/create', [AvisController::class, 'create'])->name('avis.create');
         Route::post('avis', [AvisController::class, 'store'])->name('avis.store');
@@ -39,6 +45,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     });
 });
 
-// Mini-sites publics (pour le dev)
+// Mini-sites publics
 Route::get('/minisite/{slug}', [MiniSiteController::class, 'index'])->name('minisite.home');
 Route::post('/minisite/{slug}/contact', [MiniSiteController::class, 'contact'])->name('minisite.contact');
+Route::post('/minisite/{slug}/avis', [MiniSiteController::class, 'submitAvis'])->name('minisite.avis');

@@ -2,27 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\ContactMail;
 use Illuminate\Http\Request;
 use App\Models\Agent;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\ContactMail;
+use App\Models\Avis;
 
 class MiniSiteController extends Controller
 {
     public function index(Request $request, $slug)
     {
-        // Récupérer l'agent depuis le slug
         $agent = Agent::where('slug', $slug)
             ->where('actif', true)
             ->firstOrFail();
 
         // Charger les relations
         $agent->load([
-            'annonces' => function ($query) {
-                $query->where('visible', true)->latest()->limit(6);
-            },
+            'servicesActifs',
             'avisValides' => function ($query) {
-                $query->latest()->limit(5);
+                $query->latest()->limit(10);
             }
         ]);
 
@@ -40,6 +38,7 @@ class MiniSiteController extends Controller
             'email' => 'required|email',
             'telephone' => 'nullable|string|max:20',
             'message' => 'required|string|max:2000',
+            'objectif' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -50,5 +49,25 @@ class MiniSiteController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Erreur lors de l\'envoi du message. Veuillez réessayer.');
         }
+    }
+
+    public function submitAvis(Request $request, $slug)
+    {
+        $agent = Agent::where('slug', $slug)
+            ->where('actif', true)
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'nom_client' => 'required|string|max:255',
+            'commentaire' => 'required|string|max:1000',
+            'note' => 'required|integer|min:1|max:5',
+        ]);
+
+        $validated['agent_id'] = $agent->id;
+        $validated['valide'] = false;
+
+        Avis::create($validated);
+
+        return back()->with('success_avis', 'Merci pour votre avis ! Il sera publié après validation.');
     }
 }

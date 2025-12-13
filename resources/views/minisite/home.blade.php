@@ -1,364 +1,496 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $agent->nom_complet }} - Agent Immobilier</title>
+    <title>{{ $agent->nom_complet }} - {{ $agent->titre ?? 'Conseiller Immobilier' }} | GEST'IMMO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        [x-cloak] {
-            display: none !important;
+        body {
+            font-family: 'Open Sans', sans-serif;
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .font-heading {
+            font-family: 'Montserrat', sans-serif;
         }
 
-        .animate-fade-in-up {
-            animation: fadeInUp 0.6s ease-out forwards;
+        /* Boutons navigation onglets */
+        .advisor-nav-btn {
+            @apply px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wide transition-all duration-300 shadow-sm border border-gray-100 flex items-center gap-2;
         }
 
-        .stagger-1 {
-            animation-delay: 0.1s;
+        .advisor-nav-btn:not(.active) {
+            @apply bg-white text-gray-500 hover:bg-gray-50 hover:shadow-md hover:text-blue-700;
         }
 
-        .stagger-2 {
-            animation-delay: 0.2s;
-        }
-
-        .stagger-3 {
-            animation-delay: 0.3s;
-        }
-
-        .hover-scale {
-            transition: transform 0.3s ease;
-        }
-
-        .hover-scale:hover {
-            transform: scale(1.05);
+        .advisor-nav-btn.active {
+            @apply bg-blue-700 text-white shadow-lg border-blue-700 transform scale-105;
         }
     </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen flex flex-col">
-    <div class="flex-grow">
-        <!-- Header -->
-        <header class="bg-white shadow-md sticky top-0 z-40" style="border-top: 4px solid {{ $agent->couleur_primaire }}">
-            <div class="max-w-6xl mx-auto px-4 py-4">
-                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center space-x-4">
-                        @if ($agent->photo)
-                            <img src="{{ Storage::url($agent->photo) }}" alt="{{ $agent->nom_complet }}"
-                                class="w-16 h-16 rounded-full object-cover ring-4 ring-white shadow-lg">
-                        @else
-                            <div class="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl ring-4 ring-white shadow-lg"
-                                style="background-color: {{ $agent->couleur_primaire }}">
-                                {{ strtoupper(substr($agent->prenom, 0, 1) . substr($agent->nom, 0, 1)) }}
-                            </div>
-                        @endif
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900">{{ $agent->nom_complet }}</h1>
-                            <p class="text-gray-600 text-sm flex items-center gap-2">
-                                <i class="fas fa-map-marker-alt"></i>
-                                Agent Immobilier - {{ $agent->secteur }}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="text-center md:text-right">
-                        <a href="tel:{{ $agent->telephone }}"
-                            class="text-lg font-semibold hover:underline flex items-center gap-2"
-                            style="color: {{ $agent->couleur_primaire }}">
-                            <i class="fas fa-phone"></i>
-                            {{ $agent->telephone }}
-                        </a>
-                        <a href="mailto:{{ $agent->email }}"
-                            class="text-sm text-gray-600 hover:underline flex items-center gap-2 justify-center md:justify-end mt-1">
-                            <i class="fas fa-envelope"></i>
-                            {{ $agent->email }}
-                        </a>
-                    </div>
+<body class="bg-gray-50" x-data="miniSite()">
+
+    <!-- HEADER CONSEILLER -->
+    <div class="bg-white border-b border-gray-200 pt-8 pb-10">
+        <div class="max-w-6xl mx-auto px-4">
+            <!-- Logo GEST'IMMO en haut -->
+            <div class="flex items-center gap-3 mb-8">
+                <img src="{{ asset('images/logo3d.png') }}" alt="GEST'IMMO" class="h-16 w-auto">
+                <div class="flex flex-col leading-none">
+                    <span class="font-heading font-extrabold text-xl text-blue-700 tracking-tight">GEST'<span
+                            class="text-gray-800">IMMO</span></span>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Réseau National</span>
                 </div>
             </div>
-        </header>
 
-        <!-- Bio -->
-        @if ($agent->bio)
-            <section class="max-w-6xl mx-auto px-4 py-8 opacity-0 animate-fade-in-up stagger-1">
-                <div class="bg-white rounded-2xl shadow-lg p-6 hover-scale">
-                    <h2 class="text-2xl font-bold mb-3 flex items-center gap-2"
-                        style="color: {{ $agent->couleur_primaire }}">
-                        <i class="fas fa-user-circle"></i>
-                        À propos
-                    </h2>
-                    <p class="text-gray-700 leading-relaxed">{{ $agent->bio }}</p>
-                </div>
-            </section>
-        @endif
-
-        <!-- Annonces -->
-        @if ($agent->annonces->count() > 0)
-            <section class="max-w-6xl mx-auto px-4 py-8 opacity-0 animate-fade-in-up stagger-2" x-data="{
-                isOpen: false,
-                currentImages: [],
-                currentIndex: 0,
-            
-                get currentImage() {
-                    return this.currentImages[this.currentIndex] ? '{{ Storage::url('') }}' + this.currentImages[this.currentIndex] : '';
-                },
-            
-                get totalImages() {
-                    return this.currentImages.length;
-                },
-            
-                openGallery(photos, startIndex) {
-                    this.currentImages = photos;
-                    this.currentIndex = startIndex;
-                    this.isOpen = true;
-                    document.body.style.overflow = 'hidden';
-                },
-            
-                close() {
-                    this.isOpen = false;
-                    document.body.style.overflow = 'auto';
-                },
-            
-                next() {
-                    this.currentIndex = (this.currentIndex + 1) % this.totalImages;
-                },
-            
-                prev() {
-                    this.currentIndex = (this.currentIndex - 1 + this.totalImages) % this.totalImages;
-                }
-            }"
-                @keydown.window.escape="close()" @keydown.window.arrow-right="isOpen && next()"
-                @keydown.window.arrow-left="isOpen && prev()">
-
-                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2"
-                    style="color: {{ $agent->couleur_primaire }}">
-                    <i class="fas fa-home"></i>
-                    Mes annonces
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    @foreach ($agent->annonces as $annonce)
-                        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover-scale">
-                            <!-- Photo principale -->
-                            @if ($annonce->photos && count($annonce->photos) > 0)
-                                <div class="relative h-56 cursor-pointer group"
-                                    @click="openGallery(@js($annonce->photos), 0)">
-                                    <img src="{{ Storage::url($annonce->photos[0]) }}" alt="{{ $annonce->titre }}"
-                                        class="w-full h-full object-cover">
-                                    @if (count($annonce->photos) > 1)
-                                        <div
-                                            class="absolute bottom-3 right-3 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
-                                            <i class="fas fa-images"></i>
-                                            {{ count($annonce->photos) }}
-                                        </div>
-                                    @endif
-                                    <div
-                                        class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
-                                        <i
-                                            class="fas fa-search-plus text-white text-3xl opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                    </div>
-                                </div>
+            <div class="flex flex-col md:flex-row gap-8 items-start">
+                <!-- Photo & Réseaux Sociaux -->
+                <div class="flex-shrink-0 mx-auto md:mx-0 relative flex flex-col items-center">
+                    <div class="relative group">
+                        <div
+                            class="p-1.5 bg-white rounded-full shadow-2xl border-2 border-gray-100 group-hover:border-blue-700 transition duration-500">
+                            @if ($agent->photo)
+                                <img src="{{ Storage::url($agent->photo) }}"
+                                    class="w-44 h-44 rounded-full object-cover transform group-hover:scale-[1.02] transition duration-500"
+                                    alt="{{ $agent->nom_complet }}">
                             @else
                                 <div
-                                    class="h-56 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                                    <i class="fas fa-image text-gray-400 text-5xl"></i>
-                                </div>
-                            @endif
-
-                            <div class="p-4">
-                                <h3 class="font-bold text-lg mb-2">{{ $annonce->titre }}</h3>
-                                <p class="text-gray-600 text-sm mb-3 line-clamp-2">
-                                    {{ Str::limit($annonce->description, 100) }}</p>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xl font-bold" style="color: {{ $agent->couleur_primaire }}">
-                                        {{ number_format($annonce->prix, 0, ',', ' ') }} €
-                                    </span>
-                                    <span class="text-sm text-white px-3 py-1 rounded-full"
-                                        style="background-color: {{ $agent->couleur_secondaire }}">
-                                        {{ ucfirst($annonce->type) }}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Mini galerie -->
-                            @if ($annonce->photos && count($annonce->photos) > 1)
-                                <div class="px-4 pb-4 grid grid-cols-4 gap-2">
-                                    @foreach (array_slice($annonce->photos, 1, 4) as $index => $photo)
-                                        <img src="{{ Storage::url($photo) }}" alt="Photo {{ $index + 2 }}"
-                                            class="w-full h-14 object-cover rounded cursor-pointer hover:opacity-75 transition-opacity"
-                                            @click.stop="openGallery(@js($annonce->photos), {{ $index + 1 }})">
-                                    @endforeach
+                                    class="w-44 h-44 rounded-full bg-blue-700 flex items-center justify-center text-white font-bold text-5xl">
+                                    {{ strtoupper(substr($agent->prenom, 0, 1) . substr($agent->nom, 0, 1)) }}
                                 </div>
                             @endif
                         </div>
-                    @endforeach
+                        @if ($agent->disponible)
+                            <span
+                                class="absolute bottom-4 right-4 bg-green-500 w-5 h-5 border-4 border-white rounded-full animate-pulse"
+                                title="Disponible"></span>
+                        @endif
+                    </div>
+
+                    <!-- Réseaux Sociaux -->
+                    @if ($agent->reseaux_sociaux && count(array_filter($agent->reseaux_sociaux)) > 0)
+                        <div class="mt-6 flex gap-4">
+                            @if (!empty($agent->reseaux_sociaux['linkedin']))
+                                <a href="{{ $agent->reseaux_sociaux['linkedin'] }}" target="_blank"
+                                    class="w-12 h-12 rounded-full bg-[#0077b5] text-white flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 transform hover:scale-110">
+                                    <i class="fab fa-linkedin-in text-xl"></i>
+                                </a>
+                            @endif
+
+                            @if (!empty($agent->reseaux_sociaux['instagram']))
+                                <a href="{{ $agent->reseaux_sociaux['instagram'] }}" target="_blank"
+                                    class="w-12 h-12 rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] text-white flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 transform hover:scale-110">
+                                    <i class="fab fa-instagram text-xl"></i>
+                                </a>
+                            @endif
+
+                            @if (!empty($agent->reseaux_sociaux['facebook']))
+                                <a href="{{ $agent->reseaux_sociaux['facebook'] }}" target="_blank"
+                                    class="w-12 h-12 rounded-full bg-[#1877F2] text-white flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 transform hover:scale-110">
+                                    <i class="fab fa-facebook-f text-xl"></i>
+                                </a>
+                            @endif
+                        </div>
+                    @endif
                 </div>
 
-                <!-- Lightbox -->
-                <template x-teleport="body">
-                    <div x-show="isOpen" x-cloak @click="close()"
-                        class="fixed inset-0 z-[9999] flex items-center justify-center"
-                        style="background: rgba(0, 0, 0, 0.92);" x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                        x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100"
-                        x-transition:leave-end="opacity-0">
+                <!-- Infos & Stats -->
+                <div class="flex-grow text-center md:text-left pt-2">
+                    <h1 class="font-heading font-extrabold text-3xl md:text-4xl text-gray-900 mb-2">
+                        {{ $agent->nom_complet }}</h1>
+                    @if ($agent->titre)
+                        <p class="text-lg text-gray-500 font-medium mb-6">{{ $agent->titre }}</p>
+                    @endif
 
-                        <!-- Container central -->
-                        <div class="relative w-full h-full flex items-center justify-center p-8">
-
-                            <!-- Image -->
-                            <div @click.stop class="relative max-w-6xl max-h-full">
-                                <img :src="currentImage" alt="Photo"
-                                    class="max-w-full max-h-[90vh] w-auto h-auto object-contain shadow-2xl"
-                                    x-transition:enter="transition ease-out duration-200"
-                                    x-transition:enter-start="opacity-0 scale-95"
-                                    x-transition:enter-end="opacity-100 scale-100">
-                            </div>
-
-                            <!-- Bouton fermer -->
-                            <button @click="close()"
-                                class="absolute top-6 right-6 w-12 h-12 flex items-center justify-center rounded-full bg-white bg-opacity-10 hover:bg-opacity-20 text-white backdrop-blur-sm transition-all">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-
-                            <!-- Flèche gauche -->
-                            <button x-show="totalImages > 1" @click.stop="prev()"
-                                class="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white bg-opacity-10 hover:bg-opacity-20 text-white backdrop-blur-sm transition-all">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-
-                            <!-- Flèche droite -->
-                            <button x-show="totalImages > 1" @click.stop="next()"
-                                class="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white bg-opacity-10 hover:bg-opacity-20 text-white backdrop-blur-sm transition-all">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-
-                            <!-- Compteur -->
-                            <div
-                                class="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white bg-opacity-10 backdrop-blur-sm text-white text-sm font-medium">
-                                <span x-text="(currentIndex + 1) + ' / ' + totalImages"></span>
-                            </div>
-                        </div>
+                    <div class="flex flex-wrap justify-center md:justify-start gap-3 mb-8">
+                        <span
+                            class="px-4 py-2 bg-gray-50 text-gray-700 rounded-lg text-xs font-bold uppercase tracking-wide border border-gray-200 flex items-center shadow-sm">
+                            <i class="fas fa-map-marker-alt mr-2 text-blue-700"></i> {{ $agent->secteur }}
+                        </span>
+                        @if ($agent->langues)
+                            <span
+                                class="px-4 py-2 bg-gray-50 text-gray-700 rounded-lg text-xs font-bold uppercase tracking-wide border border-gray-200 flex items-center shadow-sm">
+                                <i class="fas fa-language mr-2 text-blue-700"></i> {{ $agent->langues }}
+                            </span>
+                        @endif
+                        @if ($agent->avisValides->count() > 0)
+                            <span
+                                class="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold uppercase tracking-wide border border-blue-100 flex items-center shadow-sm">
+                                <i class="fas fa-star mr-2"></i>
+                                {{ number_format($agent->avisValides->avg('note'), 1) }}/5
+                                ({{ $agent->avisValides->count() }} Avis)
+                            </span>
+                        @endif
                     </div>
-                </template>
-            </section>
-        @endif
 
-        <!-- Avis -->
-        @if ($agent->avisValides->count() > 0)
-            <section class="max-w-6xl mx-auto px-4 py-8 opacity-0 animate-fade-in-up stagger-3">
-                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2"
-                    style="color: {{ $agent->couleur_primaire }}">
-                    <i class="fas fa-star"></i>
-                    Avis clients
-                    <span
-                        class="text-base font-normal text-gray-600">({{ number_format($agent->moyenne_avis, 1) }}/5)</span>
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    @foreach ($agent->avisValides as $avis)
-                        <div class="bg-white rounded-2xl shadow-lg p-5 hover-scale">
-                            <div class="flex items-center mb-3">
-                                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                                    style="background-color: {{ $agent->couleur_primaire }}">
-                                    {{ strtoupper(substr($avis->nom_client, 0, 1)) }}
-                                </div>
-                                <div class="ml-3 flex-1">
-                                    <span class="font-bold">{{ $avis->nom_client }}</span>
-                                    <div class="text-yellow-500">
-                                        {{ str_repeat('⭐', $avis->note) }}
-                                    </div>
-                                </div>
-                            </div>
-                            <p class="text-gray-700 italic text-sm">"{{ $avis->commentaire }}"</p>
-                        </div>
-                    @endforeach
+                    @if ($agent->accroche)
+                        <p
+                            class="text-gray-600 text-sm max-w-2xl leading-relaxed hidden md:block border-l-4 border-blue-700 pl-4">
+                            "{{ $agent->accroche }}"
+                        </p>
+                    @endif
                 </div>
-            </section>
-        @endif
 
-        <!-- Contact -->
-        <section class="max-w-6xl mx-auto px-4 py-8 opacity-0 animate-fade-in-up stagger-3">
-            <div class="bg-white rounded-2xl shadow-lg p-6">
-                <h2 class="text-2xl font-bold mb-5 flex items-center gap-2"
-                    style="color: {{ $agent->couleur_primaire }}">
-                    <i class="fas fa-envelope"></i>
-                    Me contacter
-                </h2>
-
-                @if (session('success'))
-                    <div class="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded">
-                        <i class="fas fa-check-circle mr-2"></i>
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                <form action="{{ route('minisite.contact', $agent->slug) }}" method="POST" class="space-y-4">
-                    @csrf
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" name="nom" placeholder="Votre nom *" required
-                            class="border border-gray-300 rounded-lg px-4 py-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <input type="email" name="email" placeholder="Votre email *" required
-                            class="border border-gray-300 rounded-lg px-4 py-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                    <input type="tel" name="telephone" placeholder="Votre téléphone"
-                        class="border border-gray-300 rounded-lg px-4 py-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <textarea name="message" rows="5" placeholder="Votre message *" required
-                        class="border border-gray-300 rounded-lg px-4 py-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-                    <button type="submit"
-                        class="text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center gap-2"
-                        style="background-color: {{ $agent->couleur_primaire }}">
-                        <i class="fas fa-paper-plane"></i>
-                        Envoyer le message
+                <!-- BOUTONS ACTIONS -->
+                <div class="flex flex-col gap-3 w-full md:w-auto mt-6 md:mt-0">
+                    <button @click="scrollToContact()"
+                        class="bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white text-base px-8 py-3 rounded-xl font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
+                        <i class="fas fa-envelope text-lg"></i> CONTACTER
                     </button>
-                </form>
+
+                    <a href="tel:{{ $agent->telephone }}"
+                        class="bg-white text-blue-700 border-2 border-blue-700 hover:bg-blue-50 text-base px-8 py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center gap-2 group whitespace-nowrap">
+                        <i class="fas fa-phone group-hover:rotate-12 transition-transform text-lg"></i>
+                        <span>{{ $agent->telephone }}</span>
+                    </a>
+                </div>
             </div>
-        </section>
+
+            <!-- INFO LEGALE -->
+            @if ($agent->info_legale)
+                <div class="mt-10 pt-8 border-t border-gray-100 text-center md:text-left">
+                    <p class="text-sm font-bold text-gray-900">{{ $agent->nom_complet }} - Conseiller Indépendant en
+                        Immobilier.</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ $agent->info_legale }}</p>
+                </div>
+            @endif
+
+            <!-- NAVIGATION ONGLETS -->
+            <div class="flex flex-wrap justify-center md:justify-start gap-4 mt-6">
+                <button @click="activeTab = 'services'" :class="activeTab === 'services' ? 'active' : ''"
+                    class="advisor-nav-btn">
+                    <i class="fas fa-briefcase"></i> Mes Services
+                </button>
+                <button @click="activeTab = 'reviews'" :class="activeTab === 'reviews' ? 'active' : ''"
+                    class="advisor-nav-btn">
+                    <i class="fas fa-comments"></i> Avis Clients ({{ $agent->avisValides->count() }})
+                </button>
+                @if ($agent->parcours)
+                    <button @click="activeTab = 'bio'" :class="activeTab === 'bio' ? 'active' : ''"
+                        class="advisor-nav-btn">
+                        <i class="fas fa-user"></i> Mon Parcours
+                    </button>
+                @endif
+            </div>
+        </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-white mt-12 py-6">
-        <div class="max-w-6xl mx-auto px-4 text-center">
-            <p>© {{ date('Y') }} {{ $agent->nom_complet }} - Tous droits réservés</p>
-            @if ($agent->reseaux_sociaux)
-                <div class="flex justify-center gap-4 mt-3">
-                    @if (isset($agent->reseaux_sociaux['linkedin']))
-                        <a href="{{ $agent->reseaux_sociaux['linkedin'] }}" target="_blank"
-                            class="text-xl hover:text-blue-400 transition-colors">
-                            <i class="fab fa-linkedin"></i>
-                        </a>
+    <!-- CONTENU PRINCIPAL -->
+    <div class="max-w-6xl mx-auto px-4 py-12 grid md:grid-cols-3 gap-10">
+
+        <!-- COLONNE GAUCHE (Contenu) -->
+        <div class="md:col-span-2 space-y-8">
+
+            <!-- TAB: SERVICES -->
+            <div x-show="activeTab === 'services'" x-transition>
+                <div class="space-y-6">
+                    @forelse($agent->servicesActifs as $service)
+                        <div
+                            class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 flex flex-col md:flex-row gap-6 hover:shadow-xl transition duration-300">
+                            <!-- Image du service -->
+                            <div class="w-full md:w-1/3 bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center"
+                                style="min-height: 200px;">
+                                @if ($service->image)
+                                    <img src="{{ Storage::url($service->image) }}" alt="{{ $service->titre }}"
+                                        class="w-full h-full object-cover">
+                                @else
+                                    <div class="text-white text-center p-6">
+                                        <i class="fas fa-briefcase text-4xl mb-3 text-cyan-400"></i>
+                                        <span class="font-bold uppercase tracking-wider text-sm">SERVICE</span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <!-- Contenu du service -->
+                            <div class="w-full md:w-2/3 flex flex-col justify-center">
+                                <h3 class="font-bold text-xl text-gray-900 mb-2">{{ $service->titre }}</h3>
+                                <p class="text-gray-600 text-sm mb-4">{{ $service->description }}</p>
+
+                                @if ($service->points_forts && count($service->points_forts) > 0)
+                                    <ul class="text-xs text-gray-500 space-y-1">
+                                        @foreach ($service->points_forts as $point)
+                                            <li><i class="fas fa-check text-green-500 mr-2"></i>{{ $point }}
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="bg-white p-12 rounded-xl shadow-lg text-center">
+                            <i class="fas fa-briefcase text-gray-300 text-5xl mb-4"></i>
+                            <p class="text-gray-500">Aucun service configuré pour le moment.</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- TAB: AVIS -->
+            <div x-show="activeTab === 'reviews'" x-transition>
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+
+                    <!-- MESSAGE DE SUCCÈS (EN HAUT) -->
+                    @if (session('success_avis'))
+                        <div
+                            class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 text-sm flex items-center gap-2 rounded">
+                            <i class="fas fa-check-circle text-lg"></i>
+                            <div>
+                                <strong>Merci !</strong> {{ session('success_avis') }}
+                            </div>
+                        </div>
                     @endif
-                    @if (isset($agent->reseaux_sociaux['facebook']))
-                        <a href="{{ $agent->reseaux_sociaux['facebook'] }}" target="_blank"
-                            class="text-xl hover:text-blue-400 transition-colors">
-                            <i class="fab fa-facebook"></i>
-                        </a>
+
+                    <div
+                        class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-gray-100 pb-6">
+                        <div>
+                            <h2 class="font-heading font-bold text-2xl text-gray-900">Ce qu'ils disent de moi</h2>
+                            @if ($agent->avisValides->count() > 0)
+                                <div
+                                    class="mt-2 bg-green-50 text-green-700 px-4 py-1 rounded-full font-bold text-xs inline-flex items-center gap-2">
+                                    <i class="fas fa-check-circle"></i> 100% Avis Vérifiés
+                                </div>
+                            @endif
+                        </div>
+                        <button @click="showReviewForm = !showReviewForm"
+                            class="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-md flex items-center gap-2 transform active:scale-95">
+                            <i class="fas fa-pen"></i> <span
+                                x-text="showReviewForm ? 'Annuler' : 'Écrire un avis'"></span>
+                        </button>
+                    </div>
+
+                    <!-- FORMULAIRE AJOUT AVIS -->
+                    <div x-show="showReviewForm" x-transition
+                        class="mb-10 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-star text-yellow-400"></i> Partagez votre expérience
+                        </h3>
+
+                        <form action="{{ route('minisite.avis', $agent->slug) }}" method="POST" class="space-y-4">
+                            @csrf
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1">
+                                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Votre
+                                        Nom</label>
+                                    <input type="text" name="nom_client" required
+                                        class="w-full p-3 bg-white rounded-lg border border-gray-200 focus:border-blue-700 outline-none text-sm transition shadow-sm"
+                                        placeholder="Ex: Pierre D.">
+                                    @error('nom_client')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div class="md:w-1/3">
+                                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Note
+                                        Globale</label>
+                                    <select name="note" required
+                                        class="w-full p-3 bg-white rounded-lg border border-gray-200 focus:border-blue-700 outline-none text-sm font-bold text-yellow-500 shadow-sm cursor-pointer">
+                                        <option value="5">⭐⭐⭐⭐⭐ 5/5</option>
+                                        <option value="4">⭐⭐⭐⭐ 4/5</option>
+                                        <option value="3">⭐⭐⭐ 3/5</option>
+                                        <option value="2">⭐⭐ 2/5</option>
+                                        <option value="1">⭐ 1/5</option>
+                                    </select>
+                                    @error('note')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Votre
+                                    message</label>
+                                <textarea name="commentaire" rows="3" required
+                                    class="w-full p-3 bg-white rounded-lg border border-gray-200 focus:border-blue-700 outline-none text-sm transition shadow-sm"
+                                    placeholder="Racontez votre expérience..."></textarea>
+                                @error('commentaire')
+                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div class="flex gap-3 justify-end pt-2">
+                                <button type="button" @click="showReviewForm = false"
+                                    class="text-gray-500 hover:text-gray-800 text-sm font-bold px-4 py-2 transition">
+                                    Annuler
+                                </button>
+                                <button type="submit"
+                                    class="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-2.5 rounded-lg text-sm shadow-md transition transform active:scale-95">
+                                    Publier mon avis
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Liste des avis -->
+                    @if ($agent->avisValides->count() > 0)
+                        <div class="grid gap-8">
+                            @foreach ($agent->avisValides as $avis)
+                                <div class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                                    <div class="flex items-center gap-4 mb-3">
+                                        <div
+                                            class="w-12 h-12 rounded-full bg-blue-700 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                                            {{ strtoupper(substr($avis->nom_client, 0, 1)) }}
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-gray-900 text-base">{{ $avis->nom_client }}
+                                            </div>
+                                            <div class="flex text-yellow-400 text-xs mt-0.5">
+                                                @for ($i = 0; $i < $avis->note; $i++)
+                                                    <i class="fas fa-star"></i>
+                                                @endfor
+                                            </div>
+                                        </div>
+                                        <span class="ml-auto text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded">
+                                            {{ $avis->created_at->diffForHumans() }}
+                                        </span>
+                                    </div>
+                                    <div class="relative pl-6">
+                                        <i class="fas fa-quote-left absolute top-0 left-0 text-gray-300 text-xs"></i>
+                                        <p class="text-gray-600 text-sm italic leading-relaxed">
+                                            "{{ $avis->commentaire }}"</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-12">
+                            <i class="fas fa-comments text-gray-300 text-5xl mb-4"></i>
+                            <p class="text-gray-500">Aucun avis pour le moment. Soyez le premier à laisser un avis !
+                            </p>
+                        </div>
                     @endif
+                </div>
+            </div>
+
+            <!-- TAB: PARCOURS -->
+            @if ($agent->parcours)
+                <div x-show="activeTab === 'bio'" x-transition>
+                    <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+                        <h2 class="font-heading font-bold text-2xl text-gray-900 mb-6">Mon Parcours</h2>
+                        <div class="prose max-w-none">
+                            <p class="text-gray-600 leading-relaxed text-sm whitespace-pre-line">
+                                {{ $agent->parcours }}</p>
+
+                            @if ($agent->bio)
+                                <div
+                                    class="my-6 p-4 border-l-4 border-blue-700 bg-blue-50 text-blue-700 italic text-sm">
+                                    {{ $agent->bio }}
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             @endif
         </div>
+
+        <!-- COLONNE DROITE (Formulaire Contact Sticky) -->
+        <div class="md:col-span-1">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 sticky top-24 overflow-hidden">
+                <div class="bg-blue-700 p-6 text-center">
+                    <h3 class="font-heading font-bold text-white text-lg">Demander un Audit</h3>
+                    <p class="text-blue-100 text-xs mt-1">Gratuit & Sans engagement</p>
+                </div>
+
+                <div class="p-6">
+                    @if (session('success'))
+                        <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-3 mb-4 text-sm">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    @if (session('error'))
+                        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 mb-4 text-sm">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+
+                    <form action="{{ route('minisite.contact', $agent->slug) }}" method="POST" class="space-y-4">
+                        @csrf
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1 uppercase tracking-wide">Votre
+                                objectif</label>
+                            <select name="objectif"
+                                class="w-full p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm focus:border-blue-700 outline-none transition cursor-pointer text-gray-700 font-medium">
+                                <option>Cashflow Positif</option>
+                                <option>Patrimoine / Retraite</option>
+                                <option>Défiscalisation</option>
+                                <option>Transaction</option>
+                                <option>Gestion locative</option>
+                            </select>
+                        </div>
+
+                        <input type="text" name="nom" placeholder="Nom complet" required
+                            class="w-full p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm focus:border-blue-700 outline-none transition">
+
+                        <input type="tel" name="telephone" placeholder="Téléphone"
+                            class="w-full p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm focus:border-blue-700 outline-none transition">
+
+                        <input type="email" name="email" placeholder="Email" required
+                            class="w-full p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm focus:border-blue-700 outline-none transition">
+
+                        <textarea name="message" rows="4" placeholder="Votre message..." required
+                            class="w-full p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm focus:border-blue-700 outline-none transition"></textarea>
+
+                        <button type="submit"
+                            class="w-full bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white font-bold py-4 rounded-lg shadow-xl transform active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 text-sm uppercase tracking-wider">
+                            <span>Valider ma demande</span>
+                            <i class="fas fa-paper-plane animate-pulse"></i>
+                        </button>
+
+                        <p class="text-[10px] text-gray-400 text-center mt-2 leading-tight">
+                            En validant, vous acceptez d'être recontacté par {{ $agent->prenom }} {{ $agent->nom }}
+                            pour étudier votre projet.
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-gray-200 pt-12 pb-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <!-- LOGO -->
+            <div class="flex items-center justify-center gap-3 mb-8">
+                <img src="{{ asset('images/logo3d.png') }}" alt="GEST'IMMO" class="h-12 w-auto">
+                <span class="font-heading font-extrabold text-xl text-blue-700">GEST'<span
+                        class="text-gray-800">IMMO</span></span>
+            </div>
+
+            @if ($agent->info_legale)
+                <div class="mb-6 pb-6 border-b border-gray-100">
+                    <p class="text-sm font-bold text-gray-900">{{ $agent->nom_complet }} - Conseiller Indépendant en
+                        Immobilier.</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ $agent->info_legale }}</p>
+                </div>
+            @endif
+
+            <div class="max-w-4xl mx-auto mb-8">
+                <p class="text-[10px] text-gray-400 leading-relaxed">
+                    Tous les conseillers GEST'IMMO sont des agents commerciaux indépendants immatriculés au RSAC,
+                    titulaires de la carte de démarchage immobilier.
+                </p>
+            </div>
+
+            <p class="text-gray-400 text-[10px]">© {{ date('Y') }} GEST'IMMO. Tous droits réservés.</p>
+        </div>
     </footer>
+
+    <script>
+        function miniSite() {
+            return {
+                activeTab: 'services',
+                showReviewForm: false,
+                scrollToContact() {
+                    document.querySelector('.sticky').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }
+        }
+    </script>
 </body>
 
 </html>

@@ -15,16 +15,21 @@ return new class extends Migration
             $table->id();
             $table->string('prenom');
             $table->string('nom');
+            $table->string('titre')->nullable(); // Ex: "Expert en Investissement"
             $table->string('slug')->unique();
             $table->string('email')->unique();
             $table->string('telephone', 20);
             $table->string('photo')->nullable();
             $table->text('bio')->nullable();
+            $table->text('accroche')->nullable(); // Description courte sous les badges
+            $table->text('info_legale')->nullable(); // RSAC, etc.
+            $table->text('parcours')->nullable(); // Texte parcours professionnel
             $table->string('secteur');
+            $table->string('langues')->default('FR'); // Ex: "FR / EN"
             $table->json('reseaux_sociaux')->nullable();
             $table->boolean('actif')->default(true);
-            $table->string('couleur_primaire')->default('#1e40af');
-            $table->string('couleur_secondaire')->default('#3b82f6');
+            $table->boolean('disponible')->default(true); // Statut disponibilité
+
             $table->timestamps();
 
             $table->index('slug');

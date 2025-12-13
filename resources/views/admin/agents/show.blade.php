@@ -1,142 +1,141 @@
 @extends('layouts.admin')
 
-@section('title', 'Détails agent')
+@section('title', $agent->nom_complet)
 
 @section('content')
-    <div class="mb-6">
-        <div class="flex justify-between items-center">
-            <h1 class="text-3xl font-bold text-gray-900">{{ $agent->nom_complet }}</h1>
-            <div class="space-x-2">
-                <a href="{{ $agent->url }}" target="_blank"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-                    Voir le mini-site →
-                </a>
-                <a href="{{ route('admin.agents.edit', $agent) }}"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                    Modifier
-                </a>
-                <a href="{{ route('admin.agents.index') }}"
-                    class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">
-                    Retour
-                </a>
+<div class="mb-6 flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-gray-900">{{ $agent->nom_complet }}</h1>
+    <div class="flex gap-3">
+        <a href="{{ $agent->url }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+            Voir le mini-site
+        </a>
+        <a href="{{ route('admin.agents.edit', $agent) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+            Modifier
+        </a>
+    </div>
+</div>
+
+<!-- Infos agent -->
+<div class="bg-white shadow-md rounded-lg p-6 mb-6">
+    <div class="flex items-start gap-6">
+        @if($agent->photo)
+            <img src="{{ Storage::url($agent->photo) }}" alt="{{ $agent->nom_complet }}" class="h-32 w-32 rounded-full object-cover">
+        @else
+            <div class="h-32 w-32 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-4xl">
+                {{ strtoupper(substr($agent->prenom, 0, 1) . substr($agent->nom, 0, 1)) }}
+            </div>
+        @endif
+        
+        <div class="flex-1">
+            <h2 class="text-2xl font-bold text-gray-900">{{ $agent->nom_complet }}</h2>
+            @if($agent->titre)
+                <p class="text-lg text-gray-600 mb-4">{{ $agent->titre }}</p>
+            @endif
+            
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div><strong>Email:</strong> {{ $agent->email }}</div>
+                <div><strong>Téléphone:</strong> {{ $agent->telephone }}</div>
+                <div><strong>Secteur:</strong> {{ $agent->secteur }}</div>
+                <div><strong>Langues:</strong> {{ $agent->langues }}</div>
+                <div>
+                    <strong>Statut:</strong> 
+                    @if($agent->actif)
+                        <span class="text-green-600">Actif</span>
+                    @else
+                        <span class="text-red-600">Inactif</span>
+                    @endif
+                </div>
+                <div>
+                    <strong>Disponibilité:</strong> 
+                    @if($agent->disponible)
+                        <span class="text-green-600">Disponible</span>
+                    @else
+                        <span class="text-gray-600">Non disponible</span>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Colonne principale -->
-        <div class="md:col-span-2 space-y-6">
-            <!-- Informations -->
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <h2 class="text-xl font-bold mb-4">Informations</h2>
-                <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Email</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $agent->email }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Téléphone</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $agent->telephone }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Secteur</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $agent->secteur }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Slug</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $agent->slug }}</dd>
-                    </div>
-                </dl>
-                @if ($agent->bio)
-                    <div class="mt-4">
-                        <dt class="text-sm font-medium text-gray-500">Biographie</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $agent->bio }}</dd>
-                    </div>
-                @endif
-            </div>
-
-            <!-- Annonces -->
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold">Annonces ({{ $agent->annonces->count() }})</h2>
-                    <a href="{{ route('admin.annonces.index', $agent) }}"
-                        class="text-blue-600 hover:text-blue-800 text-sm font-semibold">
-                        Gérer les annonces →
-                    </a>
-                </div>
-                @forelse($agent->annonces as $annonce)
-                    <div class="border-b pb-3 mb-3 last:border-0">
-                        <h3 class="font-semibold">{{ $annonce->titre }}</h3>
-                        <p class="text-sm text-gray-600">{{ number_format($annonce->prix, 0, ',', ' ') }}€ -
-                            {{ ucfirst($annonce->type) }}</p>
-                    </div>
-                @empty
-                    <p class="text-gray-500">Aucune annonce</p>
-                @endforelse
-            </div>
-
-            <!-- Avis -->
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold">Avis ({{ $agent->avis->count() }})</h2>
-                    <a href="{{ route('admin.avis.index', $agent) }}"
-                        class="text-blue-600 hover:text-blue-800 text-sm font-semibold">
-                        Gérer les avis →
-                    </a>
-                </div>
-                @forelse($agent->avisValides->take(3) as $avis)
-                    <div class="border-b pb-3 mb-3 last:border-0">
-                        <div class="flex items-center mb-1">
-                            <span class="font-semibold">{{ $avis->nom_client }}</span>
-                            <span class="ml-2 text-yellow-500">{{ str_repeat('⭐', $avis->note) }}</span>
+<!-- Services et Avis -->
+<div class="grid md:grid-cols-2 gap-6">
+    <!-- Services -->
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-900">Services ({{ $agent->services ? $agent->services->count() : 0 }})</h3>
+            <a href="{{ route('admin.services.create', $agent) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                + Ajouter
+            </a>
+        </div>
+        
+        @if($agent->services && $agent->services->count() > 0)
+            <div class="space-y-3">
+                @foreach($agent->services as $service)
+                    <div class="border border-gray-200 rounded p-3">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-gray-900">{{ $service->titre }}</h4>
+                                <p class="text-sm text-gray-600 mt-1">{{ Str::limit($service->description, 80) }}</p>
+                            </div>
+                            <a href="{{ route('admin.services.edit', [$agent, $service]) }}" class="text-blue-600 hover:text-blue-900 text-sm ml-2">
+                                Modifier
+                            </a>
                         </div>
-                        <p class="text-sm text-gray-600">{{ $avis->commentaire }}</p>
                     </div>
-                @empty
-                    <p class="text-gray-500">Aucun avis validé</p>
-                @endforelse
-
-                @if ($agent->avis->where('valide', false)->count() > 0)
-                    <div class="mt-4 bg-orange-50 border-l-4 border-orange-500 text-orange-700 p-3 rounded text-sm">
-                        ⚠️ {{ $agent->avis->where('valide', false)->count() }} avis en attente de validation
-                    </div>
-                @endif
+                @endforeach
             </div>
-        </div>
-
-        <!-- Sidebar -->
-        <div class="space-y-6">
-            <!-- Photo -->
-            <div class="bg-white shadow-md rounded-lg p-6">
-                @if ($agent->photo)
-                    <img src="{{ Storage::url($agent->photo) }}" alt="{{ $agent->nom_complet }}"
-                        class="w-full rounded-lg">
-                @else
-                    <div
-                        class="w-full h-48 bg-blue-600 rounded-lg flex items-center justify-center text-white text-6xl font-bold">
-                        {{ strtoupper(substr($agent->prenom, 0, 1) . substr($agent->nom, 0, 1)) }}
-                    </div>
-                @endif
-            </div>
-
-            <!-- Statistiques -->
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <h3 class="font-bold mb-4">Statistiques</h3>
-                <div class="space-y-3">
-                    <div>
-                        <div class="text-sm text-gray-500">Annonces</div>
-                        <div class="text-2xl font-bold">{{ $agent->annonces->count() }}</div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-500">Avis</div>
-                        <div class="text-2xl font-bold">{{ $agent->avisValides->count() }}</div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-500">Note moyenne</div>
-                        <div class="text-2xl font-bold">{{ number_format($agent->moyenne_avis, 1) }}/5</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        @else
+            <p class="text-gray-500 text-center py-8">Aucun service configuré.</p>
+        @endif
+        
+        <a href="{{ route('admin.services.index', $agent) }}" class="block text-center text-blue-600 hover:text-blue-900 mt-4 text-sm">
+            Gérer les services →
+        </a>
     </div>
+    
+    <!-- Avis -->
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-900">Avis ({{ $agent->avis->count() }})</h3>
+            <a href="{{ route('admin.avis.create', $agent) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                + Ajouter
+            </a>
+        </div>
+        
+        @php
+            $avisPending = $agent->avis->where('valide', false)->count();
+        @endphp
+        
+        @if($avisPending > 0)
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-4">
+                <p class="text-sm text-yellow-700">
+                    <strong>{{ $avisPending }}</strong> avis en attente de validation
+                </p>
+            </div>
+        @endif
+        
+        @if($agent->avisValides->count() > 0)
+            <div class="space-y-3">
+                @foreach($agent->avisValides->take(3) as $avis)
+                    <div class="border border-gray-200 rounded p-3">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="font-bold text-gray-900">{{ $avis->nom_client }}</div>
+                            <div class="text-yellow-400">
+                                @for($i = 0; $i < $avis->note; $i++)⭐@endfor
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600">{{ Str::limit($avis->commentaire, 80) }}</p>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <p class="text-gray-500 text-center py-8">Aucun avis validé.</p>
+        @endif
+        
+        <a href="{{ route('admin.avis.index', $agent) }}" class="block text-center text-blue-600 hover:text-blue-900 mt-4 text-sm">
+            Gérer les avis →
+        </a>
+    </div>
+</div>
 @endsection
