@@ -74,7 +74,7 @@
                     <form action="{{ route('admin.agents.destroy', $agent) }}" method="POST" class="inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" onclick="return confirm('Êtes-vous sûr ? Cela supprimera aussi tous les services et avis.')" class="text-red-600 hover:text-red-900">
+                        <button type="submit" onclick="return confirm('Êtes-vous sûr ? Cela supprimera aussi tous les services et avis.')" class="text-red-600 hover:text-red-900 cursor-pointer">
                             Supprimer
                         </button>
                     </form>

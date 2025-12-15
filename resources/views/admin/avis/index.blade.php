@@ -58,7 +58,7 @@
                     <form action="{{ route('admin.avis.destroy', [$agent, $unAvis]) }}" method="POST" class="inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" onclick="return confirm('Êtes-vous sûr ?')" class="text-red-600 hover:text-red-900">
+                        <button type="submit" onclick="return confirm('Êtes-vous sûr ?')" class="text-red-600 hover:text-red-900 cursor-pointer">
                             Supprimer
                         </button>
                     </form>

@@ -164,16 +164,16 @@
 
             <!-- NAVIGATION ONGLETS -->
             <div class="flex flex-wrap justify-center md:justify-start gap-4 mt-6">
-                <button @click="activeTab = 'services'" :class="activeTab === 'services' ? 'active' : ''"
+                <button @click="activeTab = 'services'" :class="activeTab === 'services' ? 'active' : '' cursor-pointer"
                     class="advisor-nav-btn">
                     <i class="fas fa-briefcase"></i> Mes Services
                 </button>
-                <button @click="activeTab = 'reviews'" :class="activeTab === 'reviews' ? 'active' : ''"
+                <button @click="activeTab = 'reviews'" :class="activeTab === 'reviews' ? 'active' : '' cursor-pointer"
                     class="advisor-nav-btn">
                     <i class="fas fa-comments"></i> Avis Clients ({{ $agent->avisValides->count() }})
                 </button>
                 @if ($agent->parcours)
-                    <button @click="activeTab = 'bio'" :class="activeTab === 'bio' ? 'active' : ''"
+                    <button @click="activeTab = 'bio'" :class="activeTab === 'bio' ? 'active' : '' cursor-pointer"
                         class="advisor-nav-btn">
                         <i class="fas fa-user"></i> Mon Parcours
                     </button>
