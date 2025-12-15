@@ -38,12 +38,14 @@
     <div class="bg-white border-b border-gray-200 pt-8 pb-10">
         <div class="max-w-6xl mx-auto px-4">
             <!-- Logo GEST'IMMO en haut -->
-            <div class="flex items-center gap-3 mb-8">
-                <img src="{{ asset('images/logo3d.png') }}" alt="GEST'IMMO" class="h-16 w-auto">
+            <div class="flex items-center gap-1 mb-8">
+                <img src="{{ asset('images/logo3d.png') }}" alt="Logo" class="w-20 h-20">
                 <div class="flex flex-col leading-none">
-                    <span class="font-heading font-extrabold text-xl text-blue-700 tracking-tight">GEST'<span
-                            class="text-gray-800">IMMO</span></span>
-                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Réseau National</span>
+                    <span class="font-heading font-extrabold text-xl text-blue-700 tracking-tight">
+                        GEST'<span class="text-red-800">IMMO</span>
+                    </span>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">L'investissement en plus
+                        simple</span>
                 </div>
             </div>
 
@@ -451,13 +453,19 @@
     <!-- FOOTER -->
     <footer class="bg-white border-t border-gray-200 pt-12 pb-8 mt-12">
         <div class="max-w-7xl mx-auto px-4 text-center">
-            <!-- LOGO -->
+            <!-- LOGO + NOM GEST'IMMO -->
             <div class="flex items-center justify-center gap-3 mb-8">
-                <img src="{{ asset('images/logo3d.png') }}" alt="GEST'IMMO" class="h-12 w-auto">
-                <span class="font-heading font-extrabold text-xl text-blue-700">GEST'<span
-                        class="text-gray-800">IMMO</span></span>
+                <img src="{{ asset('images/logo3d.png') }}" alt="GEST'IMMO" class="h-16 w-auto">
+                <div class="flex flex-col leading-none text-left">
+                    <span class="font-heading font-extrabold text-xl text-blue-700 tracking-tight">
+                        GEST'<span class="text-red-800">IMMO</span>
+                    </span>
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">L'investissement en plus
+                        simple</span>
+                </div>
             </div>
 
+            <!-- INFO LÉGALE CONSEILLER -->
             @if ($agent->info_legale)
                 <div class="mb-6 pb-6 border-b border-gray-100">
                     <p class="text-sm font-bold text-gray-900">{{ $agent->nom_complet }} - Conseiller Indépendant en
@@ -466,11 +474,23 @@
                 </div>
             @endif
 
+            <!-- MENTION LÉGALE RÉSEAU -->
             <div class="max-w-4xl mx-auto mb-8">
                 <p class="text-[10px] text-gray-400 leading-relaxed">
-                    Tous les conseillers GEST'IMMO sont des agents commerciaux indépendants immatriculés au RSAC,
-                    titulaires de la carte de démarchage immobilier.
+                    Tous les conseillers GEST'IMMO sont des agents commerciaux indépendants de la SARL GEST'IMMO France
+                    immatriculés au RSAC, titulaires de la carte de démarchage immobilier pour le compte de la société
+                    GEST'IMMO France SARL.
                 </p>
+            </div>
+
+            <!-- LIENS BAS DE PAGE -->
+            <div class="flex flex-wrap justify-center gap-6 text-xs text-gray-500 mb-4 font-medium">
+                <a href="https://gestimmo-presta.fr/mentions-legales" class="hover:text-blue-700 transition">Mentions
+                    Légales</a>
+                <a href="https://gestimmo-presta.fr/confidentialite" class="hover:text-blue-700 transition">Politique
+                    de Confidentialité</a>
+                <a href="https://gestimmo-presta.fr/cookies" class="hover:text-blue-700 transition">Cookies</a>
+                <a href="#" class="hover:text-blue-700 transition">Médiation</a>
             </div>
 
             <p class="text-gray-400 text-[10px]">© {{ date('Y') }} GEST'IMMO. Tous droits réservés.</p>
