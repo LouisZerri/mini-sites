@@ -41,9 +41,9 @@ class AgentController extends Controller
             'reseaux_sociaux.instagram' => 'nullable|url',
         ]);
 
-        // Upload de la photo
+        // Upload de la photo dans le storage partagé
         if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('agents', 'public');
+            $validated['photo'] = $request->file('photo')->store('agents', 'shared_storage');
         }
 
         // Gestion des réseaux sociaux
@@ -89,13 +89,13 @@ class AgentController extends Controller
             'reseaux_sociaux.instagram' => 'nullable|url',
         ]);
 
-        // Upload de la nouvelle photo
+        // Upload de la nouvelle photo dans le storage partagé
         if ($request->hasFile('photo')) {
             // Supprimer l'ancienne photo
             if ($agent->photo) {
-                Storage::disk('public')->delete($agent->photo);
+                Storage::disk('shared_storage')->delete($agent->photo);
             }
-            $validated['photo'] = $request->file('photo')->store('agents', 'public');
+            $validated['photo'] = $request->file('photo')->store('agents', 'shared_storage');
         }
 
         // Gestion des réseaux sociaux
@@ -112,13 +112,13 @@ class AgentController extends Controller
     {
         // Supprimer la photo de l'agent
         if ($agent->photo) {
-            Storage::disk('public')->delete($agent->photo);
+            Storage::disk('shared_storage')->delete($agent->photo);
         }
 
         // Supprimer toutes les photos de tous les services de l'agent
         foreach ($agent->services as $service) {
             if ($service->image) {
-                Storage::disk('public')->delete($service->image);
+                Storage::disk('shared_storage')->delete($service->image);
             }
         }
 
