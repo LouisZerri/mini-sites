@@ -8,7 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;600&display=swap"
+        rel="stylesheet">
     <style>
         body {
             font-family: 'Open Sans', sans-serif;
@@ -54,18 +56,20 @@
                 <!-- Photo & Réseaux Sociaux -->
                 <div class="flex-shrink-0 mx-auto md:mx-0 relative flex flex-col items-center">
                     <div class="relative group">
+                        <!-- Conteneur avec bordure simulée -->
                         <div
-                            class="p-1.5 bg-white rounded-full shadow-2xl border-2 border-gray-100 group-hover:border-blue-700 transition duration-500">
-                            @if ($agent->photo)
-                                <img src="{{ Storage::url($agent->photo) }}"
-                                    class="w-44 h-44 rounded-full object-cover transform group-hover:scale-[1.02] transition duration-500"
-                                    alt="{{ $agent->nom_complet }}">
-                            @else
-                                <div
-                                    class="w-44 h-44 rounded-full bg-blue-700 flex items-center justify-center text-white font-bold text-5xl">
-                                    {{ strtoupper(substr($agent->prenom, 0, 1) . substr($agent->nom, 0, 1)) }}
-                                </div>
-                            @endif
+                            class="w-48 h-48 rounded-full bg-white shadow-2xl p-1.5 group-hover:ring-2 group-hover:ring-blue-700 transition duration-500">
+                            <div class="w-full h-full rounded-full overflow-hidden bg-gray-200">
+                                @if ($agent->photo)
+                                    <img src="{{ Storage::url($agent->photo) }}" class="w-full h-full object-cover"
+                                        style="object-position: 50% 20%;" alt="{{ $agent->nom_complet }}">
+                                @else
+                                    <div
+                                        class="w-full h-full bg-blue-700 flex items-center justify-center text-white font-bold text-5xl">
+                                        {{ strtoupper(substr($agent->prenom, 0, 1) . substr($agent->nom, 0, 1)) }}
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                         @if ($agent->disponible)
                             <span
@@ -164,16 +168,22 @@
 
             <!-- NAVIGATION ONGLETS -->
             <div class="flex flex-wrap justify-center md:justify-start gap-4 mt-6">
-                <button @click="activeTab = 'services'" :class="activeTab === 'services' ? 'active' : '' cursor-pointer"
+                <button @click="activeTab = 'services'"
+                    :class="activeTab === 'services' ? 'active' : ''
+                    cursor - pointer"
                     class="advisor-nav-btn">
                     <i class="fas fa-briefcase"></i> Mes Services
                 </button>
-                <button @click="activeTab = 'reviews'" :class="activeTab === 'reviews' ? 'active' : '' cursor-pointer"
+                <button @click="activeTab = 'reviews'"
+                    :class="activeTab === 'reviews' ? 'active' : ''
+                    cursor - pointer"
                     class="advisor-nav-btn">
                     <i class="fas fa-comments"></i> Avis Clients ({{ $agent->avisValides->count() }})
                 </button>
                 @if ($agent->parcours)
-                    <button @click="activeTab = 'bio'" :class="activeTab === 'bio' ? 'active' : '' cursor-pointer"
+                    <button @click="activeTab = 'bio'"
+                        :class="activeTab === 'bio' ? 'active' : ''
+                        cursor - pointer"
                         class="advisor-nav-btn">
                         <i class="fas fa-user"></i> Mon Parcours
                     </button>
