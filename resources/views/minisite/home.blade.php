@@ -4,13 +4,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $agent->nom_complet }} - {{ $agent->titre ?? 'Conseiller Immobilier' }} | GEST'IMMO</title>
+    <meta name="google-site-verification" content="AY6KdM_l6CeZQ7lsf40bCorrAbK07tguROPdFFidalQ" />
+    
+    {{-- SEO Title --}}
+    <title>{{ $agent->prenom }} {{ $agent->nom }} - {{ $agent->titre ?? 'Conseiller Immobilier' }} à {{ $agent->secteur }} | GEST'IMMO</title>
+    
+    {{-- Meta Description --}}
+    <meta name="description" content="{{ $agent->titre ?? 'Conseiller Immobilier' }} à {{ $agent->secteur }}. {{ Str::limit($agent->accroche ?? $agent->bio ?? 'Expert immobilier GEST\'IMMO pour vos projets d\'investissement, transaction et gestion locative.', 150) }}">
+    
+    {{-- Mots-clés --}}
+    <meta name="keywords" content="{{ $agent->prenom }} {{ $agent->nom }}, conseiller immobilier {{ $agent->secteur }}, agent immobilier {{ $agent->secteur }}, GEST'IMMO, immobilier {{ $agent->secteur }}, investissement locatif, gestion locative">
+    
+    {{-- Canonical URL --}}
+    <link rel="canonical" href="https://{{ $agent->slug }}.gestimmo-conseillers.fr">
+    
+    {{-- Robots --}}
+    <meta name="robots" content="index, follow">
+    
+    {{-- Open Graph (Facebook, LinkedIn) --}}
+    <meta property="og:type" content="profile">
+    <meta property="og:title" content="{{ $agent->prenom }} {{ $agent->nom }} - {{ $agent->titre ?? 'Conseiller Immobilier' }} | GEST'IMMO">
+    <meta property="og:description" content="{{ $agent->titre ?? 'Conseiller Immobilier' }} à {{ $agent->secteur }}. {{ Str::limit($agent->accroche, 100) }}">
+    <meta property="og:url" content="https://{{ $agent->slug }}.gestimmo-conseillers.fr">
+    @if($agent->photo)
+        <meta property="og:image" content="{{ url(Storage::url($agent->photo)) }}">
+    @endif
+    <meta property="og:site_name" content="GEST'IMMO">
+    <meta property="og:locale" content="fr_FR">
+    
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $agent->prenom }} {{ $agent->nom }} - GEST'IMMO">
+    <meta name="twitter:description" content="{{ $agent->titre ?? 'Conseiller Immobilier' }} à {{ $agent->secteur }}">
+    @if($agent->photo)
+        <meta name="twitter:image" content="{{ url(Storage::url($agent->photo)) }}">
+    @endif
+    
+    {{-- Schema.org JSON-LD (très important pour Google) --}}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "RealEstateAgent",
+        "name": "{{ $agent->prenom }} {{ $agent->nom }}",
+        "givenName": "{{ $agent->prenom }}",
+        "familyName": "{{ $agent->nom }}",
+        "jobTitle": "{{ $agent->titre ?? 'Conseiller Immobilier' }}",
+        "description": "{{ $agent->accroche ?? $agent->bio }}",
+        "url": "https://{{ $agent->slug }}.gestimmo-conseillers.fr",
+        @if($agent->photo)
+        "image": "{{ url(Storage::url($agent->photo)) }}",
+        @endif
+        @if($agent->email)
+        "email": "{{ $agent->email }}",
+        @endif
+        @if($agent->telephone)
+        "telephone": "{{ $agent->telephone }}",
+        @endif
+        "areaServed": {
+            "@type": "Place",
+            "name": "{{ $agent->secteur }}"
+        },
+        "worksFor": {
+            "@type": "Organization",
+            "name": "GEST'IMMO",
+            "url": "https://gestimmo-presta.fr",
+            "logo": "https://gestimmo-presta.fr/images/logo3d.png"
+        },
+        @if($agent->langues)
+        "knowsLanguage": "{{ $agent->langues }}",
+        @endif
+        @if($agent->avisValides && $agent->avisValides->count() > 0)
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "{{ number_format($agent->avisValides->avg('note'), 1) }}",
+            "reviewCount": "{{ $agent->avisValides->count() }}",
+            "bestRating": "5",
+            "worstRating": "1"
+        },
+        @endif
+        "priceRange": "€€"
+    }
+    </script>
+
+    {{-- Styles et scripts --}}
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;600&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    {{-- Favicon --}}
+    <link rel="icon" type="image/png" href="https://gestimmo-presta.fr/images/logo3d.png">
+    
     <style>
         body {
             font-family: 'Open Sans', sans-serif;
@@ -20,7 +104,6 @@
             font-family: 'Montserrat', sans-serif;
         }
 
-        /* Boutons navigation onglets */
         .advisor-nav-btn {
             @apply px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wide transition-all duration-300 shadow-sm border border-gray-100 flex items-center gap-2;
         }

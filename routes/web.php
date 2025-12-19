@@ -5,6 +5,7 @@ use App\Http\Controllers\AgentController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\AvisController;
 use App\Http\Controllers\MiniSiteController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Auth;
 
 // Redirection racine
@@ -49,3 +50,4 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 Route::get('/minisite/{slug}', [MiniSiteController::class, 'index'])->name('minisite.home');
 Route::post('/minisite/{slug}/contact', [MiniSiteController::class, 'contact'])->name('minisite.contact');
 Route::post('/minisite/{slug}/avis', [MiniSiteController::class, 'submitAvis'])->name('minisite.avis');
+Route::get('/sitemap.xml', [SitemapController::class, 'index']);
