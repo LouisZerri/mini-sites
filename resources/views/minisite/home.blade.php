@@ -200,46 +200,51 @@
 
             <!-- TAB: SERVICES -->
             <div x-show="activeTab === 'services'" x-transition>
-                <div class="space-y-6">
-                    @forelse($agent->servicesActifs as $service)
-                        <div
-                            class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 flex flex-col md:flex-row gap-6 hover:shadow-xl transition duration-300">
-                            <!-- Image du service -->
-                            <div class="w-full md:w-1/3 bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center"
-                                style="min-height: 200px;">
-                                @if ($service->image)
-                                    <img src="{{ Storage::url($service->image) }}" alt="{{ $service->titre }}"
-                                        class="w-full h-full object-cover">
-                                @else
-                                    <div class="text-white text-center p-6">
-                                        <i class="fas fa-briefcase text-4xl mb-3 text-cyan-400"></i>
-                                        <span class="font-bold uppercase tracking-wider text-sm">SERVICE</span>
-                                    </div>
+                @if ($servicesByCategory->count() > 0)
+                    <div class="space-y-10">
+                        @foreach ($servicesByCategory as $category => $services)
+                            <div>
+                                <!-- Titre de la catégorie -->
+                                @if ($servicesByCategory->count() > 1)
+                                    <h2
+                                        class="font-heading font-bold text-xl text-gray-800 mb-4 pb-2 border-b-2 border-blue-700">
+                                        <i
+                                            class="fas fa-{{ $category === 'location' ? 'key' : ($category === 'gestion' ? 'tasks' : ($category === 'travaux' ? 'tools' : 'star')) }} text-blue-700 mr-2"></i>
+                                        {{ $categoryLabels[$category] ?? 'Autres' }}
+                                    </h2>
                                 @endif
-                            </div>
 
-                            <!-- Contenu du service -->
-                            <div class="w-full md:w-2/3 flex flex-col justify-center">
-                                <h3 class="font-bold text-xl text-gray-900 mb-2">{{ $service->titre }}</h3>
-                                <p class="text-gray-600 text-sm mb-4">{{ $service->description }}</p>
+                                <!-- Liste des services de cette catégorie -->
+                                <div class="space-y-4">
+                                    @foreach ($services as $service)
+                                        <div
+                                            class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition duration-300">
+                                            <h3 class="font-bold text-lg text-gray-900 mb-2">{{ $service->titre }}</h3>
+                                            <p class="text-gray-600 text-sm mb-4">{{ $service->description }}</p>
 
-                                @if ($service->points_forts && count($service->points_forts) > 0)
-                                    <ul class="text-xs text-gray-500 space-y-1">
-                                        @foreach ($service->points_forts as $point)
-                                            <li><i class="fas fa-check text-green-500 mr-2"></i>{{ $point }}
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @endif
+                                            @if ($service->points_forts && count($service->points_forts) > 0)
+                                                <ul class="text-xs text-gray-500 space-y-1">
+                                                    @foreach ($service->points_forts as $point)
+                                                        @if ($point)
+                                                            <li><i
+                                                                    class="fas fa-check text-green-500 mr-2"></i>{{ $point }}
+                                                            </li>
+                                                        @endif
+                                                    @endforeach
+                                                </ul>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
                             </div>
-                        </div>
-                    @empty
-                        <div class="bg-white p-12 rounded-xl shadow-lg text-center">
-                            <i class="fas fa-briefcase text-gray-300 text-5xl mb-4"></i>
-                            <p class="text-gray-500">Aucun service configuré pour le moment.</p>
-                        </div>
-                    @endforelse
-                </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="bg-white p-12 rounded-xl shadow-lg text-center">
+                        <i class="fas fa-briefcase text-gray-300 text-5xl mb-4"></i>
+                        <p class="text-gray-500">Aucun service configuré pour le moment.</p>
+                    </div>
+                @endif
             </div>
 
             <!-- TAB: AVIS -->
@@ -462,49 +467,136 @@
     </div>
 
     <!-- FOOTER -->
-    <footer class="bg-white border-t border-gray-200 pt-12 pb-8 mt-12">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <!-- LOGO + NOM GEST'IMMO -->
-            <div class="flex items-center justify-center gap-3 mb-8">
-                <img src="{{ asset('images/logo3d.png') }}" alt="GEST'IMMO" class="h-16 w-auto">
-                <div class="flex flex-col leading-none text-left">
-                    <span class="font-heading font-extrabold text-xl text-blue-700 tracking-tight">
-                        GEST'<span class="text-red-800">IMMO</span>
-                    </span>
-                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">L'investissement en plus
-                        simple</span>
+    <footer class="bg-white border-t border-gray-200 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4">
+
+            <!-- NOUVELLE SECTION : LIENS PRINCIPAUX -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <!-- Colonne Logo/Info -->
+                <div class="col-span-1 md:col-span-1">
+                    <div class="flex items-center gap-2 mb-6">
+                        <img src="https://gestimmo-presta.fr/images/logo3d.png" alt="Logo" class="w-20 h-20">
+                        <div class="flex flex-col leading-none">
+                            <span class="font-heading font-extrabold text-xl text-blue-700 tracking-tight">GEST'<span
+                                    class="text-red-800">IMMO</span></span>
+                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">L'investissement
+                                en plus simple</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6">Le premier réseau immobilier hybride qui
+                        réunit transaction, investissement et gestion.</p>
+                    <div class="flex gap-4">
+                        <a href="https://www.facebook.com/share/19je7E8Fiw/?mibextid=wwXIfr"
+                            class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-brand-blue hover:text-white transition">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://www.instagram.com/gestimmo.fr?igsh=MWhkbzZmdGR0dmUwZw%3D%3D&utm_source=qr"
+                            class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-brand-blue hover:text-white transition">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/company/gest-immo-presta/?viewAsMember=true"
+                            class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-brand-blue hover:text-white transition">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Colonne À propos -->
+                <div>
+                    <h4 class="font-heading font-bold text-gray-900 text-lg mb-6">À propos de GEST'IMMO</h4>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="https://gestimmo-presta.fr/aide"
+                                class="text-gray-500 hover:text-brand-blue transition text-sm font-medium text-left">
+                                Centre d'aide (FAQ)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://gestimmo-presta.fr/contact"
+                                class="text-gray-500 hover:text-brand-blue transition text-sm font-medium text-left">
+                                Contact
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://gestimmo-presta.fr/bareme-honoraires"
+                                class="text-gray-500 hover:text-brand-blue transition text-sm font-medium">
+                                Barème d'honoraires
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://gestimmo-presta.fr/conseillers"
+                                class="text-gray-500 hover:text-brand-blue transition text-sm font-medium text-left">
+                                Nos conseillers
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Colonne Services -->
+                <div>
+                    <h4 class="font-heading font-bold text-gray-900 text-lg mb-6">Nos Services</h4>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="https://gestimmo-presta.fr/investir"
+                                class="text-gray-500 hover:text-brand-blue transition text-sm font-medium text-left">
+                                Investissement Locatif
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://gestimmo-presta.fr/vendre"
+                                class="text-gray-500 hover:text-brand-blue transition text-sm font-medium text-left">
+                                Vendre un bien
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://gestimmo-presta.fr/gerer"
+                                class="text-gray-500 hover:text-brand-blue transition text-sm font-medium text-left">
+                                Gestion & Syndic
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://gestimmo-presta.fr/assurances"
+                                class="text-gray-500 hover:text-brand-blue transition text-sm font-medium text-left">
+                                Assurances Immo
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Colonne Rejoindre -->
+                <div>
+                    <h4 class="font-heading font-bold text-gray-900 text-lg mb-6">Carrière</h4>
+                    <p class="text-gray-500 text-sm mb-4">Changez de vie, rejoignez un réseau en pleine expansion.</p>
+                    <a href="https://gestimmo-presta.fr/rejoindre" style="background-color: #0054a6;"
+                        onmouseover="this.style.backgroundColor='#003d7a'"
+                        onmouseout="this.style.backgroundColor='#0054a6'"
+                        class="text-white px-6 py-3 rounded-lg font-bold text-sm transition shadow-sm w-full md:w-auto text-center inline-block">
+                        Devenir conseiller
+                    </a>
                 </div>
             </div>
 
-            <!-- INFO LÉGALE CONSEILLER -->
-            @if ($agent->info_legale)
-                <div class="mb-6 pb-6 border-b border-gray-100">
-                    <p class="text-sm font-bold text-gray-900">{{ $agent->nom_complet }} - Conseiller Indépendant en
-                        Immobilier.</p>
-                    <p class="text-xs text-gray-500 mt-1">{{ $agent->info_legale }}</p>
-                </div>
-            @endif
-
-            <!-- MENTION LÉGALE RÉSEAU -->
-            <div class="max-w-4xl mx-auto mb-8">
-                <p class="text-[10px] text-gray-400 leading-relaxed">
+            <!-- Mentions Légales -->
+            <div class="border-t border-gray-100 pt-8 pb-4">
+                <p class="text-[9px] md:text-[10px] text-gray-400 text-center leading-relaxed max-w-5xl mx-auto mb-6">
                     Tous les conseillers GEST'IMMO sont des agents commerciaux indépendants de la SARL GEST'IMMO France
                     immatriculés au RSAC, titulaires de la carte de démarchage immobilier pour le compte de la société
                     GEST'IMMO France SARL.
                 </p>
+                <div
+                    class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500 pt-4 border-t border-gray-50">
+                    <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-4 md:mb-0 text-xs font-medium">
+                        <a href="https://gestimmo-presta.fr/mentions-legales"
+                            class="hover:text-brand-blue transition">Mentions Légales</a>
+                        <a href="https://gestimmo-presta.fr/confidentialite"
+                            class="hover:text-brand-blue transition">Politique de Confidentialité</a>
+                        <a href="https://gestimmo-presta.fr/cookies"
+                            class="hover:text-brand-blue transition">Cookies</a>
+                        <a href="#" class="hover:text-brand-blue transition">Médiation</a>
+                    </div>
+                    <div class="text-xs text-gray-400">&copy; 2025 GEST'IMMO. Tous droits réservés.</div>
+                </div>
             </div>
-
-            <!-- LIENS BAS DE PAGE -->
-            <div class="flex flex-wrap justify-center gap-6 text-xs text-gray-500 mb-4 font-medium">
-                <a href="https://gestimmo-presta.fr/mentions-legales" class="hover:text-blue-700 transition">Mentions
-                    Légales</a>
-                <a href="https://gestimmo-presta.fr/confidentialite" class="hover:text-blue-700 transition">Politique
-                    de Confidentialité</a>
-                <a href="https://gestimmo-presta.fr/cookies" class="hover:text-blue-700 transition">Cookies</a>
-                <a href="#" class="hover:text-blue-700 transition">Médiation</a>
-            </div>
-
-            <p class="text-gray-400 text-[10px]">© {{ date('Y') }} GEST'IMMO. Tous droits réservés.</p>
         </div>
     </footer>
 

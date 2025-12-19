@@ -20,7 +20,6 @@
         <thead class="bg-gray-50">
             <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ordre</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Titre</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
                 <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Statut</th>
@@ -32,15 +31,6 @@
             <tr>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">
                     {{ $service->ordre }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    @if($service->image)
-                        <img src="{{ Storage::url($service->image) }}" alt="{{ $service->titre }}" class="h-16 w-24 object-cover rounded">
-                    @else
-                        <div class="h-16 w-24 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
-                            Pas d'image
-                        </div>
-                    @endif
                 </td>
                 <td class="px-6 py-4">
                     <div class="text-sm font-medium text-gray-900">{{ $service->titre }}</div>
@@ -72,7 +62,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
                     Aucun service. Créez-en un pour qu'il apparaisse sur le mini-site !
                 </td>
             </tr>

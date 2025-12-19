@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Service;
 use App\Models\Agent;
+use App\Models\PredefinedService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ServiceController extends Controller
 {
@@ -17,7 +17,10 @@ class ServiceController extends Controller
 
     public function create(Agent $agent)
     {
-        return view('admin.services.create', compact('agent'));
+        $predefinedServices = PredefinedService::getActiveByCategory();
+        $categoryLabels = PredefinedService::getCategoryLabels();
+        
+        return view('admin.services.create', compact('agent', 'predefinedServices', 'categoryLabels'));
     }
 
     public function store(Request $request, Agent $agent)
@@ -25,9 +28,9 @@ class ServiceController extends Controller
         $validated = $request->validate([
             'titre' => 'required|string|max:255',
             'description' => 'required|string',
-            'image' => 'nullable|image|max:5120',
+            'category' => 'required|string|max:50',
             'points_forts' => 'nullable|array',
-            'points_forts.*' => 'string|max:255',
+            'points_forts.*' => 'nullable|string|max:255',
             'ordre' => 'nullable|integer|min:0',
             'actif' => 'boolean',
         ]);
@@ -35,14 +38,8 @@ class ServiceController extends Controller
         $validated['agent_id'] = $agent->id;
         $validated['actif'] = $request->has('actif');
         
-        // Filtrer les points forts vides
         if (isset($validated['points_forts'])) {
-            $validated['points_forts'] = array_filter($validated['points_forts']);
-        }
-
-        // Upload de l'image
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('services', 'public');
+            $validated['points_forts'] = array_values(array_filter($validated['points_forts']));
         }
 
         Service::create($validated);
@@ -54,7 +51,9 @@ class ServiceController extends Controller
 
     public function edit(Agent $agent, Service $service)
     {
-        return view('admin.services.edit', compact('agent', 'service'));
+        $categoryLabels = PredefinedService::getCategoryLabels();
+        
+        return view('admin.services.edit', compact('agent', 'service', 'categoryLabels'));
     }
 
     public function update(Request $request, Agent $agent, Service $service)
@@ -62,27 +61,17 @@ class ServiceController extends Controller
         $validated = $request->validate([
             'titre' => 'required|string|max:255',
             'description' => 'required|string',
-            'image' => 'nullable|image|max:5120',
+            'category' => 'required|string|max:50',
             'points_forts' => 'nullable|array',
-            'points_forts.*' => 'string|max:255',
+            'points_forts.*' => 'nullable|string|max:255',
             'ordre' => 'nullable|integer|min:0',
             'actif' => 'boolean',
         ]);
 
         $validated['actif'] = $request->has('actif');
         
-        // Filtrer les points forts vides
         if (isset($validated['points_forts'])) {
-            $validated['points_forts'] = array_filter($validated['points_forts']);
-        }
-
-        // Upload de la nouvelle image
-        if ($request->hasFile('image')) {
-            // Supprimer l'ancienne image
-            if ($service->image) {
-                Storage::disk('public')->delete($service->image);
-            }
-            $validated['image'] = $request->file('image')->store('services', 'public');
+            $validated['points_forts'] = array_values(array_filter($validated['points_forts']));
         }
 
         $service->update($validated);
@@ -94,11 +83,6 @@ class ServiceController extends Controller
 
     public function destroy(Agent $agent, Service $service)
     {
-        // Supprimer l'image
-        if ($service->image) {
-            Storage::disk('public')->delete($service->image);
-        }
-
         $service->delete();
 
         return redirect()

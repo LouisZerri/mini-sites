@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('services', function (Blueprint $table) {
             $table->id();
             $table->foreignId('agent_id')->constrained()->onDelete('cascade');
+            $table->string('category')->nullable();
             $table->string('titre'); // Ex: "Sourcing & Négociation"
-            $table->string('image')->nullable(); // Image du service
             $table->text('description'); // Description du service
             $table->json('points_forts')->nullable(); // Liste de points forts
             $table->integer('ordre')->default(0); // Pour trier les services
@@ -20,6 +20,7 @@ return new class extends Migration
             $table->timestamps();
             
             $table->index(['agent_id', 'actif']);
+            $table->index('category');
         });
     }
 

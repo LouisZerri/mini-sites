@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Agent;
+use App\Models\PredefinedService;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ContactMail;
 use App\Models\Avis;
@@ -16,7 +17,6 @@ class MiniSiteController extends Controller
             ->where('actif', true)
             ->firstOrFail();
 
-        // Charger les relations
         $agent->load([
             'servicesActifs',
             'avisValides' => function ($query) {
@@ -24,7 +24,11 @@ class MiniSiteController extends Controller
             }
         ]);
 
-        return view('minisite.home', compact('agent'));
+        // Grouper les services par catégorie
+        $servicesByCategory = $agent->servicesActifs->groupBy('category');
+        $categoryLabels = PredefinedService::getCategoryLabels();
+
+        return view('minisite.home', compact('agent', 'servicesByCategory', 'categoryLabels'));
     }
 
     public function contact(Request $request, $slug)
@@ -42,7 +46,6 @@ class MiniSiteController extends Controller
         ]);
 
         try {
-            // Envoyer l'email au conseiller
             Mail::to($agent->email)->send(new ContactMail($validated, $agent));
 
             return back()->with('success', 'Votre message a été envoyé avec succès !');

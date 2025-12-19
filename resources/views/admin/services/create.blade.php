@@ -11,28 +11,54 @@
 </div>
 
 <div class="bg-white shadow-md rounded-lg p-6">
-    <form action="{{ route('admin.services.store', $agent) }}" method="POST" enctype="multipart/form-data" x-data="serviceForm()">
+    <form action="{{ route('admin.services.store', $agent) }}" method="POST" x-data="serviceForm()">
         @csrf
 
         <div class="space-y-6">
-            <!-- Titre -->
+            <!-- Sélection service prédéfini -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Titre du service *</label>
-                <input type="text" name="titre" value="{{ old('titre') }}" required
-                    placeholder="Ex: Sourcing & Négociation"
+                <label class="block text-sm font-medium text-gray-700 mb-2">Choisir un service prédéfini</label>
+                <select x-model="selectedService" @change="fillFromPredefined()" 
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
-                @error('titre')
+                    <option value="">-- Service personnalisé --</option>
+                    @foreach($predefinedServices as $category => $services)
+                        <optgroup label="{{ $categoryLabels[$category] ?? $category }}">
+                            @foreach($services as $service)
+                                <option value="{{ $service->id }}" 
+                                    data-name="{{ $service->name }}"
+                                    data-description="{{ $service->description }}"
+                                    data-category="{{ $service->category }}">
+                                    {{ $service->name }}
+                                </option>
+                            @endforeach
+                        </optgroup>
+                    @endforeach
+                </select>
+                <p class="mt-1 text-xs text-gray-500">Sélectionnez un service prédéfini ou créez un service personnalisé</p>
+            </div>
+
+            <!-- Catégorie -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Catégorie *</label>
+                <select name="category" x-model="category" required
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                    <option value="">-- Sélectionner --</option>
+                    @foreach($categoryLabels as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+                @error('category')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
 
-            <!-- Image -->
+            <!-- Titre -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Image du service</label>
-                <input type="file" name="image" accept="image/*"
+                <label class="block text-sm font-medium text-gray-700 mb-2">Titre du service *</label>
+                <input type="text" name="titre" x-model="titre" required
+                    placeholder="Ex: Mise en location du bien"
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
-                <p class="mt-1 text-xs text-gray-500">Image affichée à gauche du service (recommandé: 400x300px)</p>
-                @error('image')
+                @error('titre')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
@@ -40,15 +66,15 @@
             <!-- Description -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                <textarea name="description" rows="4" required
+                <textarea name="description" rows="4" x-model="description" required
                     placeholder="Décrivez le service en détail..."
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">{{ old('description') }}</textarea>
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500"></textarea>
                 @error('description')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
 
-            <!-- Points forts (dynamique avec Alpine.js) -->
+            <!-- Points forts -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Points forts</label>
                 
@@ -104,10 +130,29 @@
 <script>
 function serviceForm() {
     return {
+        selectedService: '',
+        category: '{{ old('category', '') }}',
+        titre: '{{ old('titre', '') }}',
+        description: '{{ old('description', '') }}',
         points: ['', ''],
+        
+        fillFromPredefined() {
+            if (!this.selectedService) {
+                return;
+            }
+            
+            const select = document.querySelector('select[x-model="selectedService"]');
+            const option = select.options[select.selectedIndex];
+            
+            this.titre = option.dataset.name || '';
+            this.description = option.dataset.description || '';
+            this.category = option.dataset.category || '';
+        },
+        
         addPoint() {
             this.points.push('');
         },
+        
         removePoint(index) {
             this.points.splice(index, 1);
         }

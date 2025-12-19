@@ -11,35 +11,34 @@
 </div>
 
 <div class="bg-white shadow-md rounded-lg p-6">
-    <form action="{{ route('admin.services.update', [$agent, $service]) }}" method="POST" enctype="multipart/form-data" x-data="serviceForm()">
+    <form action="{{ route('admin.services.update', [$agent, $service]) }}" method="POST" x-data="serviceForm()">
         @csrf
         @method('PUT')
 
         <div class="space-y-6">
+            <!-- Catégorie -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Catégorie *</label>
+                <select name="category" required
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                    <option value="">-- Sélectionner --</option>
+                    @foreach($categoryLabels as $value => $label)
+                        <option value="{{ $value }}" {{ old('category', $service->category) == $value ? 'selected' : '' }}>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('category')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
             <!-- Titre -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Titre du service *</label>
                 <input type="text" name="titre" value="{{ old('titre', $service->titre) }}" required
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
                 @error('titre')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Image actuelle -->
-            @if($service->image)
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Image actuelle</label>
-                <img src="{{ Storage::url($service->image) }}" alt="{{ $service->titre }}" class="h-48 w-auto rounded-lg object-cover">
-            </div>
-            @endif
-
-            <!-- Nouvelle image -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">{{ $service->image ? 'Changer l\'image' : 'Ajouter une image' }}</label>
-                <input type="file" name="image" accept="image/*"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
-                @error('image')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>

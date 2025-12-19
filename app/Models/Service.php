@@ -8,8 +8,8 @@ class Service extends Model
 {
     protected $fillable = [
         'agent_id',
+        'category',
         'titre',
-        'image',
         'description',
         'points_forts',
         'ordre',
@@ -24,5 +24,10 @@ class Service extends Model
     public function agent()
     {
         return $this->belongsTo(Agent::class);
+    }
+
+    public function getCategoryLabelAttribute(): string
+    {
+        return PredefinedService::getCategoryLabels()[$this->category] ?? $this->category ?? 'Autre';
     }
 }
